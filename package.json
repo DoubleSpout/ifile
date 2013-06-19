@@ -1,0 +1,33 @@
+{
+  "author": {
+    "name": "doublespout",
+    "email": "snoopyxdy@163.com",
+    "url": "http://snoopyxdy.blog.163.com"
+  },
+  "name": "ifile",
+  "description": "High performance nodejs http/https static file handler,using c++ addon and libuv lib",
+  "keywords": [
+    "node",
+    "static",
+    "file",
+    "nodejs",
+    "libuv",
+    "c++",
+    "example"
+  ],
+  "version": "0.1.1",
+  "url": "https://github.com/DoubleSpout/ifile",
+  "homepage": "https://github.com/DoubleSpout/ifile",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DoubleSpout/ifile.git"
+  },
+  "main": "index.js",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "install": "node-gyp rebuild",
+    "tset":"node ./test/main.js"
+  }
+}
