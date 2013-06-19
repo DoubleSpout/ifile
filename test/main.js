@@ -6,7 +6,7 @@ ifile.add([
 	["/static",__dirname],
 	["/static_aaa",__dirname],
 	["static2","static2"],
-	["static3/static3/","static2",['js','css']]
+	["static3/static3/","static2",['js','css','xml']]
 ],function(req, res, isStatic){
 
 	//console.log(isStatic)
@@ -41,8 +41,8 @@ var testjs1_stat = fs.statSync(path.join(__dirname,'static2','static2','test.js'
 var testcss2 = fs.readFileSync(path.join(__dirname,'static2','static3','static3','test.css'))
 var testcss2_stat = fs.statSync(path.join(__dirname,'static2','static3','static3','test.css'))
 
-var testjs2 = fs.readFileSync(path.join(__dirname,'static2','static3','static3','test.js'))
-var testjs2_stat = fs.statSync(path.join(__dirname,'static2','static3','static3','test.js'))
+var testjs2 = fs.readFileSync(path.join(__dirname,'static2','static3','static3','test.xml'))
+var testjs2_stat = fs.statSync(path.join(__dirname,'static2','static3','static3','test.xml'))
 
 
 var n = 15;
@@ -288,7 +288,7 @@ request('/static3/static3/test.css', {}, function(err,res,buf){
 },'GET')
 
 
-request('/static3/static3/test.js', {}, function(err,res,buf){
+request('/static3/static3/test.xml', {}, function(err,res,buf){
 
 	if(err) throw(err);
 	assert.equal(res.statusCode, 200)
@@ -297,7 +297,7 @@ request('/static3/static3/test.js', {}, function(err,res,buf){
 	assert.equal(res.headers["last-modified"], new Date(testjs2_stat.mtime).toUTCString())
 	assert.equal(res.headers["cache-control"], 'max-age=86400')
 	assert.equal(res.headers["content-length"], testjs2_stat.size)
-	assert.equal(res.headers["content-type"], 'application/javascript')
+	assert.equal(res.headers["content-type"], 'application/xml')
 	assert.equal(buf.toString(), testjs2.toString());
 
 	back('test12')
@@ -327,7 +327,7 @@ request('/aaa/bbb/test.txt', {}, function(err,res,buf){
 },'GET')
 
 
-request('/static3/static3/test.js', {"Accept-Encoding":"gzip,deflate,sdch"}, function(err,res,buf){
+request('/static3/static3/test.xml', {"Accept-Encoding":"gzip,deflate,sdch"}, function(err,res,buf){
 
 	if(err) throw(err);
 	assert.equal(res.statusCode, 200)
@@ -336,7 +336,7 @@ request('/static3/static3/test.js', {"Accept-Encoding":"gzip,deflate,sdch"}, fun
 	assert.equal(res.headers["last-modified"], new Date(testjs2_stat.mtime).toUTCString())
 	assert.equal(res.headers["cache-control"], 'max-age=86400')
 
-	assert.equal(res.headers["content-type"], 'application/javascript')
+	assert.equal(res.headers["content-type"], 'application/xml')
 	assert.equal(res.headers["content-encoding"], 'gzip')
 	
 	//console.log(buf.length)
