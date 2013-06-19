@@ -26,7 +26,7 @@ To include the module in your project:
 
 ##benchmark
 
-to run 1000 times send jquery.1.7.1.min.js:
+to run 1000 times send jquery.1.7.1.min.js file:
 
       nodejs: 166ms (with out any route handler and headers)
       ifile : 159ms
