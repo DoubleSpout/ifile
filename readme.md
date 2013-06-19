@@ -1,4 +1,4 @@
-# ifile(fast and simple nodejs http/https static file module)
+# ifile(fast and simple nodejs http/https static file module)[![Build Status](https://travis-ci.org/DoubleSpout/ifile.png?branch=master)](https://travis-ci.org/DoubleSpout/ifile)
 
 ifile is a simple static http/https handler module, build with libuv and c++.
 
