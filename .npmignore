@@ -1,0 +1,5 @@
+threads_a_gogo.node
+build
+.lock-wscript
+.git
+node_modules
