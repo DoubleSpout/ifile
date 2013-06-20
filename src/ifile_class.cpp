@@ -231,7 +231,9 @@ Handle<Value> ifile_class::match(const Arguments& args){
 
 
 
-	uv_queue_work(ifile::loop, &req->work_pool, worker_callback, after_worker_callback);
+	int uv_r = uv_queue_work(ifile::loop, &req->work_pool, worker_callback, after_worker_callback);
+	
+
 
 	return Undefined();
 };
@@ -244,7 +246,8 @@ void ifile_class::worker_callback(uv_work_t* req){ //线程中执行代码
 
 	 char *sign1 = "?";
 	 char *sign2 = ".";
-	char *suffix;
+	 char *suffix;
+	 uv_loop_t *loop_thread = uv_loop_new();
 
 	Request* req_p = (Request *) req->data;
 	req_p->file_dir = 0; //初始化文件夹路径指针
@@ -326,6 +329,7 @@ void ifile_class::worker_callback(uv_work_t* req){ //线程中执行代码
 	
 
 	if(!req_p->file_dir){ //如果未匹配到，则不执行去获取文件的代码
+		uv_loop_delete(loop_thread);
 		return;
 	}
 
@@ -365,12 +369,13 @@ void ifile_class::worker_callback(uv_work_t* req){ //线程中执行代码
 	const char* file_path_char = req_p->file_hole_path.c_str();
 
 
-	int r = uv_fs_stat(uv_default_loop(), &req_p->fs_t, file_path_char, NULL); //同步获取文件的状态
+	int r = uv_fs_stat(loop_thread, &req_p->fs_t, file_path_char, NULL); //同步获取文件的状态
 
 	if(r == -1){ //如果r=-1则表示未找到
-
+		uv_loop_delete(loop_thread);
 		return;
 	}
+	
 
 	req_p->uv_statbuf_p = &req_p->fs_t.statbuf; //将文件的状态存入req_p指针
 	req_p->buf_size = req_p->uv_statbuf_p->st_size;//获取文件的大小
@@ -421,7 +426,7 @@ if(req_p->if_none_match){
 
 		req_p->status_code = 304;//设置响应的状态码
 		req_p->is_find_file = 1;//表示读取缓存找到匹配
-
+		uv_loop_delete(loop_thread);
 		return;
 	}
 	
@@ -447,6 +452,7 @@ if(req_p->if_modified_since){
 
 			req_p->status_code = 304;//设置响应的状态码
 			req_p->is_find_file = 1;//表示读取缓存找到匹配
+			uv_loop_delete(loop_thread);
 			return;
 
 		}
@@ -465,20 +471,22 @@ if(req_p->if_modified_since){
 
 	if(req_p->method == "HEAD"){
 		req_p->is_find_file = 1;//表示读取缓存找到匹配
+		uv_loop_delete(loop_thread);
 		return;
 	}
 
-	r = uv_fs_open(uv_default_loop(), &req_p->fs_t, file_path_char, O_RDONLY, 0, NULL); //打开文件
+	r = uv_fs_open(loop_thread, &req_p->fs_t, file_path_char, O_RDONLY, 0, NULL); //打开文件
 
 	if(r==-1){ //如果打开失败
 		uv_fs_req_cleanup(&req_p->fs_t);
+		uv_loop_delete(loop_thread);
 		return;
 	}
 	uv_fs_req_cleanup(&req_p->fs_t);
 	
 
 	req_p->buf = new char[req_p->buf_size+1]; //new内存地址保存文件
-	r = uv_fs_read(uv_default_loop(), &req_p->fs_t, req_p->fs_t.result, 
+	r = uv_fs_read(loop_thread, &req_p->fs_t, req_p->fs_t.result, 
                    req_p->buf, req_p->buf_size, -1, NULL); //读取文件内容
 
 	if(r != -1){
@@ -486,7 +494,9 @@ if(req_p->if_modified_since){
 	}
 	uv_fs_t close_req;
 	uv_fs_req_cleanup(&req_p->fs_t);
-	uv_fs_close(uv_default_loop(), &close_req, req_p->fs_t.result, NULL);//关闭文件读取
+	uv_fs_close(loop_thread, &close_req, req_p->fs_t.result, NULL);//关闭文件读取
+	
+	uv_loop_delete(loop_thread);
 
 	//判断是否gzip压缩
 	if(req_p->accept_encoding && req_p->buf_size>1024){//如果request有gzip的accept-encoding头则
