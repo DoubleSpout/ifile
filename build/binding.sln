@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ifile", "ifile.vcxproj", "{576B85F3-1672-2ECD-0373-4C212CD9525B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ifile", "ifile.vcxproj", "{252626AE-05B7-4F44-259B-721FD7BEC25F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,10 +8,10 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{576B85F3-1672-2ECD-0373-4C212CD9525B}.Debug|x64.ActiveCfg = Debug|x64
-		{576B85F3-1672-2ECD-0373-4C212CD9525B}.Debug|x64.Build.0 = Debug|x64
-		{576B85F3-1672-2ECD-0373-4C212CD9525B}.Release|x64.ActiveCfg = Release|x64
-		{576B85F3-1672-2ECD-0373-4C212CD9525B}.Release|x64.Build.0 = Release|x64
+		{252626AE-05B7-4F44-259B-721FD7BEC25F}.Debug|x64.ActiveCfg = Debug|x64
+		{252626AE-05B7-4F44-259B-721FD7BEC25F}.Debug|x64.Build.0 = Debug|x64
+		{252626AE-05B7-4F44-259B-721FD7BEC25F}.Release|x64.ActiveCfg = Release|x64
+		{252626AE-05B7-4F44-259B-721FD7BEC25F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

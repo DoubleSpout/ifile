@@ -31,7 +31,8 @@
     "v8_no_strict_aliasing": 1,
     "v8_use_snapshot": "false",
     "visibility": "",
-    "nodedir": "C:\\Users\\wuzh.UC888\\.node-gyp\\0.10.9",
-    "copy_dev_lib": "true"
+    "nodedir": "C:\\Users\\snoopyxdy\\.node-gyp\\0.10.10",
+    "copy_dev_lib": "true",
+    "standalone_static_library": 1
   }
 }
