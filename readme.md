@@ -25,20 +25,70 @@ To include the module in your project:
      var ifile = require('ifile');
 
 ##benchmark
+send the same js file, 6KB size.
 
-to run 1000 times send jquery.1.7.1.min.js file:
+      nginx 
+      ab -c 100 -n 20000 http://192.168.28.5:8124/js/test.js
+      Requests per second:    2634.31 [#/sec] (mean)
 
-      nodejs: 166ms (with out any route handler and headers)
-      ifile : 159ms
+      ab -c 500 -n 20000 http://192.168.28.5:8124/js/test.js
+      Requests per second:    1886.92 [#/sec] (mean)
 
-gzip it and send
+      ab -c 800 -n 20000 http://192.168.28.5:8124/js/test.js
+      Requests per second:    2033.45 [#/sec] (mean)
 
-      nodejs_gzip: 3555ms
-      ifile_gzip : 2588ms
+      ab -c 500 -n 20000 -H "Accept-Encoding: gzip" http://192.168.28.5:8124/js/test.js
+      Requests per second:    2029.59 [#/sec] (mean)
+
+
+      ifile
+      ab -c 100 -n 20000 http://192.168.28.5:8125/js/test.js
+      Requests per second:    2077.29 [#/sec] (mean)
+
+      ab -c 500 -n 20000 http://192.168.28.5:8125/js/test.js
+      Requests per second:    1880.00 [#/sec] (mean)
+
+      ab -c 800 -n 20000 http://192.168.28.5:8125/js/test.js
+      Requests per second:    1791.16 [#/sec] (mean)
+
+      ab -c 500 -n 20000 -H "Accept-Encoding: gzip" http://192.168.28.5:8125/js/test.js
+      Requests per second:    1858.01 [#/sec] (mean)
+
+
+      express
+      ab -c 100 -n 20000 http://192.168.28.5:8126/js/test.js
+      Requests per second:    915.21 [#/sec] (mean)
+
+      ab -c 500 -n 20000 http://192.168.28.5:8126/js/test.js
+      Requests per second:    858.89 [#/sec] (mean)
+
+      ab -c 800 -n 20000 http://192.168.28.5:8126/js/test.js
+      Requests per second:    668.99 [#/sec] (mean)
+
+      ab -c 500 -n 20000 -H "Accept-Encoding: gzip" http://192.168.28.5:8126/js/test.js
+      Requests per second:    677.11 [#/sec] (mean)
+
+
+
+      express+ifile
+      ab -c 100 -n 20000 http://192.168.28.5:8127/js/test.js
+      Requests per second:    1684.85 [#/sec] (mean)
+
+      ab -c 500 -n 20000 http://192.168.28.5:8127/js/test.js
+      Requests per second:    1717.32 [#/sec] (mean)
+
+      ab -c 800 -n 20000 http://192.168.28.5:8127/js/test.js
+      Requests per second:    1399.09 [#/sec] (mean)
+
+      ab -c 500 -n 20000 -H "Accept-Encoding: gzip" http://192.168.28.5:8127/js/test.js
+      Requests per second:    1468.06 [#/sec] (mean)
+
 
 ## example
 
     var ifile = require('ifile')
+
+    var http = require('http')
 
     ifile.add([
 
