@@ -381,11 +381,11 @@ void ifile_class::worker_callback(uv_work_t* req){ //线程中执行代码
 	req_p->uv_statbuf_p = &req_p->fs_t.statbuf; //将文件的状态存入req_p指针
 	req_p->buf_size = req_p->uv_statbuf_p->st_size;//获取文件的大小
 
-#ifdef WIN32    
+//#ifdef WIN32    
       req_p->mtime = req_p->uv_statbuf_p->st_mtime;//获取文件mtime
-#else       
-      req_p->mtime = req_p->uv_statbuf_p->st_mtim.tv_sec;//获取文件mtime
-#endif 
+//#else       
+      //req_p->mtime = req_p->uv_statbuf_p->st_mtim.tv_sec;//获取文件mtime
+//#endif 
 	
 	req_p->content_length = req_p->buf_size;//设置content-length大小
 	uv_fs_req_cleanup(&req_p->fs_t);
