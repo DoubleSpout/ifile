@@ -248,6 +248,7 @@ void ifile_class::worker_callback(uv_work_t* req){ //线程中执行代码
 	 char *sign2 = ".";
 	 char *suffix;
 	 uv_loop_t *loop_thread = uv_loop_new();
+	 //uv_run(loop_thread, UV_RUN_DEFAULT);
 
 	Request* req_p = (Request *) req->data;
 	req_p->file_dir = 0; //初始化文件夹路径指针
@@ -486,16 +487,18 @@ if(req_p->if_modified_since){
 	
 
 	req_p->buf = new char[req_p->buf_size+1]; //new内存地址保存文件
-	r = uv_fs_read(loop_thread, &req_p->fs_t, req_p->fs_t.result, 
-                   req_p->buf, req_p->buf_size, -1, NULL); //读取文件内容
+	
+	uv_fs_t read_req;
+	r = uv_fs_read(loop_thread, &read_req, req_p->fs_t.result, 
+                   req_p->buf, req_p->buf_size+1, 0, NULL); //读取文件内容
 
 	if(r != -1){
 		req_p->is_find_file = 1;
 	}
-	uv_fs_t close_req;
-	uv_fs_req_cleanup(&req_p->fs_t);
-	uv_fs_close(loop_thread, &close_req, req_p->fs_t.result, NULL);//关闭文件读取
 	
+	uv_fs_close(loop_thread, &req_p->fs_t, req_p->fs_t.result, NULL);//关闭文件读取
+
+	uv_fs_req_cleanup(&req_p->fs_t);
 	uv_loop_delete(loop_thread);
 
 	//判断是否gzip压缩
