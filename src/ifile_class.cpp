@@ -266,8 +266,9 @@ void ifile_class::worker_callback(uv_work_t* req){ //线程中执行代码
 	strcpy(req_p->char_uri_sep, req_p->no_param_uri );
 	req_p->char_uri_sep[strlen(req_p->no_param_uri)] = '\0';
 
+#ifndef TARGET_OS_MAC
 	uv_rwlock_tryrdlock(&ifile::handler_lock); //加锁读取handler数组
-
+#endif
 	
 
 	for(int i=0;i<ifile::ifile_handler_p_len;i++){
@@ -326,8 +327,9 @@ void ifile_class::worker_callback(uv_work_t* req){ //线程中执行代码
 			break;
 		}
 	}
+#ifndef TARGET_OS_MAC
 	uv_rwlock_rdunlock(&ifile::handler_lock); //解锁
-	
+#endif
 
 	if(!req_p->file_dir){ //如果未匹配到，则不执行去获取文件的代码
 		uv_loop_delete(loop_thread);
@@ -392,7 +394,9 @@ void ifile_class::worker_callback(uv_work_t* req){ //线程中执行代码
 
 
 //获取完文件状态，开始匹配mime_type,读取主线程mime数组，需要加上线程锁
+#ifndef TARGET_OS_MAC
 	uv_rwlock_tryrdlock(&ifile::mime_lock); 
+#endif
 
 	for(int k=0;k<ifile::mime_p_len;k++){
 
@@ -409,8 +413,9 @@ void ifile_class::worker_callback(uv_work_t* req){ //线程中执行代码
 		}
 
 	}
-
+#ifndef TARGET_OS_MAC
 	uv_rwlock_rdunlock(&ifile::mime_lock); //解锁
+#endif
 //mimetype 匹配完毕
 
 //etag匹配
