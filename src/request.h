@@ -52,6 +52,14 @@ class Request {
     std::string etag;
 
 
+    //gzip
+    int is_pipe;
+    int pipe_size;
+    int is_config_gzip;
+    int gzip_min_size;
+    int gzip_level;
+
+
     Request(){
         url = 0;
         if_modified_since=0;
@@ -69,6 +77,7 @@ class Request {
         content_type = 0;
         status_code = 200;
         buf_gzip=0;
+        is_pipe=0;
     };
     ~Request(){
     	

@@ -10,6 +10,7 @@
 #include "mime.h"
 #include "gzip.h"
 #include "uv.h"
+#include "zlib/zlib.h"
 
 
 using namespace v8;
@@ -32,11 +33,22 @@ namespace ifile{
   static uv_loop_t *loop = uv_default_loop();
 
   static uv_rwlock_t handler_lock;                 //规则线程锁
-  static uv_rwlock_t mime_lock;	
-  				   //mime线程锁
-
+  static uv_rwlock_t mime_lock;					   //mime线程锁
+  static uv_rwlock_t gzip_lock;					   //gzip线程锁
 
   static Persistent<Object> default_obj = Persistent<Object>::New(Object::New()); //默认404函数执行的对象
+
+
+  static Persistent<Object> ifile_obj;
+
+  static std::string cache_controller;
+  static int pipe_size;
+  static int is_config_gzip;
+  static int gzip_min_size;
+  static int gzip_level = Z_DEFAULT_COMPRESSION;
+  static char **gzip_file;
+  static int gzip_file_len;
+
 }
 //add param
 /*
@@ -56,13 +68,38 @@ Handle<Value> ifile_class::add(const Arguments& args){
 	Local<Object> dir_array = args[1]->ToObject(); //获取静态目录数组
 	Local<Object> suffix_array = args[2]->ToObject(); //获取后缀名数组
 
+
 	ifile::default_callback = Persistent<Object>::New(args[3]->ToObject());//获取未匹配到回调函数
+	Local<Object> options = args[4]->ToObject(); //获取后缀名数组
 
 	ifile::ifile_handler_p_len = Local<Array>::Cast(args[0])->Length();//获取静态handler数组长度
 	ifile::ifile_handler_p = new ifile_handler*[ifile::ifile_handler_p_len]; //创建ifile_handler_p_len类的动态指针数组
 
 //申请内存，保存静态文件handler规则
 	loop_add(uri_array, dir_array, suffix_array, ifile::ifile_handler_p, ifile::ifile_handler_p_len); 
+
+
+//保存options的属性
+	ifile::ifile_obj = Persistent<Object>::New(options->Get(String::New("_ifile_obj"))->ToObject());
+	ifile::pipe_size = options->Get(String::New("pipe_szie"))->Int32Value();
+	ifile::cache_controller = toCString(options->Get(String::New("expired")));
+	ifile::is_config_gzip = options->Get(String::New("gzip"))->Int32Value();
+	ifile::gzip_min_size = options->Get(String::New("gzip_min_size"))->Int32Value();
+	ifile::gzip_level = options->Get(String::New("gzip_level"))->Int32Value();
+	ifile::gzip_file_len = Local<Array>::Cast(options->Get(String::New("gzip_file")))->Length();
+
+	Local<Object> file_array = options->Get(String::New("gzip_file"))->ToObject();
+	ifile::gzip_file = new char*[ifile::gzip_file_len];
+
+	for(int i=0;i<ifile::gzip_file_len;i++){
+
+		String::Utf8Value suffix_val(file_array->Get(i)->ToString());//依次获取后缀名
+		ifile::gzip_file[i] = new char[16];
+		memset(ifile::gzip_file[i],'\0',16);
+		strcpy(ifile::gzip_file[i], *suffix_val); //循环录入后缀名
+
+		//std::cout<<ifile::gzip_file[i]<<std::endl;
+	}
 
 	ifile::isAdd = 1;
 
@@ -229,12 +266,15 @@ Handle<Value> ifile_class::match(const Arguments& args){
 		req->accept_encoding[strlen(*accept_encoding_val)] = '\0';
 	}
 
+	req->pipe_size = ifile::pipe_size;
+	req->is_config_gzip = ifile::is_config_gzip;
+	req->gzip_min_size = ifile::gzip_min_size;
+	req->gzip_level = ifile::gzip_level;
+
 
 
 	int uv_r = uv_queue_work(ifile::loop, &req->work_pool, worker_callback, after_worker_callback);
 	
-
-
 	return Undefined();
 };
 	
@@ -418,6 +458,9 @@ void ifile_class::worker_callback(uv_work_t* req){ //线程中执行代码
 #endif
 //mimetype 匹配完毕
 
+
+
+
 //etag匹配
 create_etag(static_cast<unsigned long>(req_p->mtime), req_p->buf_size, req_p->etag);
 
@@ -467,19 +510,30 @@ if(req_p->if_modified_since){
 }
 
 
-	if(!req_p->content_type){
-		char *def_type = "text/plain";
-		req_p->content_type_len = strlen(def_type);
-		req_p->content_type = new char[req_p->content_type_len + 1];
-		strcpy(req_p->content_type, def_type);	
-		req_p->content_type[req_p->content_type_len] = '\0';
-	}
+if(!req_p->content_type){
+	char *def_type = "text/plain";
+	req_p->content_type_len = strlen(def_type);
+	req_p->content_type = new char[req_p->content_type_len + 1];
+	strcpy(req_p->content_type, def_type);	
+	req_p->content_type[req_p->content_type_len] = '\0';
+}
 
-	if(req_p->method == "HEAD"){
-		req_p->is_find_file = 1;//表示读取缓存找到匹配
-		uv_loop_delete(loop_thread);
-		return;
-	}
+if(req_p->method == "HEAD"){
+	req_p->is_find_file = 1;//表示读取缓存找到匹配
+	uv_loop_delete(loop_thread);
+	return;
+}
+
+
+
+if(req_p->buf_size > req_p->pipe_size){ //如果超过了大小，必须使用pipe输出,不将文件读入内存中了
+	req_p->is_pipe = 1;
+	req_p->is_find_file = 1;
+	uv_loop_delete(loop_thread);
+
+	return;
+}
+
 
 	r = uv_fs_open(loop_thread, &req_p->fs_t, file_path_char, O_RDONLY, 0, NULL); //打开文件
 
@@ -507,39 +561,57 @@ if(req_p->if_modified_since){
 	uv_loop_delete(loop_thread);
 
 	//判断是否gzip压缩
-	if(req_p->accept_encoding && req_p->buf_size>1024){//如果request有gzip的accept-encoding头则
+if(req_p->accept_encoding && req_p->is_config_gzip  && req_p->buf_size > req_p->gzip_min_size ){//如果request有gzip的accept-encoding头则
 
 		const char *gzip = "gzip";
-		char *res = strstr(tolower2(req_p->accept_encoding), gzip);
-		if(res){//如果匹配成功需要gzip
-			char *gzip_js = "js";
-			char *gzip_css = "css";
-			char *gzip_less = "less";
-			char *gzip_html = "html";
-			char *gzip_xhtml = "xhtml";
-			char *gzip_htm = "htm";
-			char *gzip_xml = "xml";
-			char *gzip_json = "json";
-			char *gzip_txt = "txt";
-			if(
-				strncmp(req_p->suffix, gzip_js, strlen(gzip_js)) == 0 ||
-				strncmp(req_p->suffix, gzip_css, strlen(gzip_css)) == 0 ||
-				strncmp(req_p->suffix, gzip_less, strlen(gzip_less)) == 0 ||
-				strncmp(req_p->suffix, gzip_html, strlen(gzip_html)) == 0 ||
-				strncmp(req_p->suffix, gzip_xhtml, strlen(gzip_xhtml)) == 0 ||
-				strncmp(req_p->suffix, gzip_htm, strlen(gzip_htm)) == 0 ||
-				strncmp(req_p->suffix, gzip_xml, strlen(gzip_xml)) == 0 ||
-				strncmp(req_p->suffix, gzip_json, strlen(gzip_json)) == 0 ||
-				strncmp(req_p->suffix, gzip_txt, strlen(gzip_txt)) == 0 
-				){
+		char *is_gzip_head = strstr(tolower2(req_p->accept_encoding), gzip);
+
+
+		if(is_gzip_head){//如果匹配成功需要gzip
+
+
+		int file_name_gzip = 0;
+
+
+#ifndef TARGET_OS_MAC
+	uv_rwlock_tryrdlock(&ifile::gzip_lock); //加锁读取handler数组
+#endif
+
+	for(int n=0; n<ifile::gzip_file_len; n++){
+
+
+	//	std::cout<<req_p->suffix<<std::endl;
+	//	std::cout<<ifile::gzip_file[n]<<std::endl;
+	//	std::cout<<strlen(ifile::gzip_file[n])<<std::endl;
+
+		int loc6 = strncmp(req_p->suffix, ifile::gzip_file[n], strlen(ifile::gzip_file[n]));
+		
+		if(loc6 == 0){
+			file_name_gzip = 1;		
+			break;
+		}
+
+	}
+
+#ifndef TARGET_OS_MAC
+	uv_rwlock_rdunlock(&ifile::gzip_lock); //解锁
+#endif
+
+
+		if(file_name_gzip){
 
 				req_p->buf_gzip = new char[req_p->buf_size];
 
-				int gzip_r = Gzip::gzip_compress(req_p->buf,req_p->buf_size,req_p->buf_gzip,req_p->buf_size);
-
+				int gzip_r = -1;
+				if(req_p->gzip_level>0 && req_p->gzip_level<10){
+					gzip_r = Gzip::gzip_compress(req_p->buf, req_p->buf_size, req_p->buf_gzip, req_p->buf_size, req_p->gzip_level);
+				}
+				else{
+					gzip_r = Gzip::gzip_compress(req_p->buf, req_p->buf_size, req_p->buf_gzip, req_p->buf_size);
+				}
+				
 				//std::cout<<"#########"<<std::endl;
 				//std::cout<<gzip_r<<std::endl;
-
 				if(gzip_r != -1){
 					req_p->is_gzip = 1;
 					req_p->buf_gzip_size = gzip_r;
@@ -547,8 +619,10 @@ if(req_p->if_modified_since){
 				
 			}
 
-		}
-	}
+		}// end if(is_gzip_head) 
+
+
+	}//end if gzip
 	
 };
 
@@ -559,6 +633,7 @@ if(req_p->if_modified_since){
  		HandleScope scope;
 
  		Request* req_p = (Request *) req->data;
+
 
  		if(req_p->is_find_file){
 
@@ -577,7 +652,7 @@ if(req_p->if_modified_since){
  			req_p->res_js_obj->Get(String::New("setHeader"))->ToObject()->CallAsFunction(req_p->res_js_obj, 2, argv_4);
 
 			//创建maxage
-			char max_age[] = "max-age=86400";
+			const char *max_age = ifile::cache_controller.c_str();
  			Local<Value> argv_6[2];
  			argv_6[0] = String::New("Cache-Control");
  			argv_6[1] = String::New(max_age);
@@ -597,9 +672,26 @@ if(req_p->if_modified_since){
  				argv_3[0] = String::New("");
  				req_p->res_js_obj->Get(String::New("end"))->ToObject()->CallAsFunction(req_p->res_js_obj, 1, argv_3); //执行res.end函数
 
+ 			}
+ 			else if(req_p->is_pipe == 1){ //如果是pipe输出
 
+ 				Local<Object> state = Object::New(); //生成file state 对象，免去ndoejs再去执行一次fs.state函数
+ 				state->Set(String::New("size"),Number::New(req_p->content_length));
+ 				state->Set(String::New("mtime"),Number::New(static_cast<unsigned long>(req_p->mtime)));
+ 				state->Set(String::New("suffix"),String::New(req_p->suffix));
+ 				state->Set(String::New("file_path"),String::New(req_p->file_hole_path.c_str()));
+ 				state->Set(String::New("is_config_gzip"),Number::New(req_p->is_config_gzip));
+ 				state->Set(String::New("gzip_min_size"),Number::New(req_p->gzip_min_size));
+				state->Set(String::New("gzip_level"),Number::New(req_p->gzip_level));
 
+ 				Persistent<Value> argv_4[3];
+				argv_4[0] = req_p->req_js_obj;
+				argv_4[1] = req_p->res_js_obj;
+				argv_4[2] = Persistent<Object>::New(state);
 
+ 				ifile::ifile_obj->Get(String::New("pipe"))->ToObject()->CallAsFunction(ifile::ifile_obj, 3, argv_4); //调用ifile.pipe方法并将req、res和state对象传递出去
+
+ 				argv_4[2].Dispose();
  			}
  			else{//如果响应200
 

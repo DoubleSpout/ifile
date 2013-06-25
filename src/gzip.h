@@ -11,7 +11,7 @@ class Gzip {
 
  public:
  	static int gzip_uncompress(char *bufin, int lenin, char *bufout, int lenout);
- 	static int gzip_compress(char *bufin, int lenin, char *bufout, int lenout);
+ 	static int gzip_compress(char *bufin, int lenin, char *bufout, int lenout, int level=Z_DEFAULT_COMPRESSION);
 	Gzip(){};
     ~Gzip(){};
   

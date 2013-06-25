@@ -142,32 +142,35 @@ for example if add ["/static2",__dirname]
 1,request "/user/aaa" will call the not_match_function,and is_static param will be 0;
 2,request "/static/not_exist_file" will call the not_match_function,and is_static param will be 1;
 
+##options
+set ifile.options property to change the default options,for example:
+      
+      var ifile = require('ifile');
+      ifile.options = {
+        expired:86400*100*30,
+        gzip:false
+      }
+
+default options is that:
+
+      default_options = {
+        pipe_szie : 1024*1024*20, //超过20MB的静态文件使用pipe传输不读入内存
+        expired : 86400*1000,     //cache-control : max-age=86400
+        gzip : true,              //是否开启gzip
+        gzip_min_size : 1024,       //开启gzip的文件必须大于等于1024byte
+        gzip_file : ['js','css','less','html','xhtml','htm','xml','json','txt'], //gzip压缩的文件后缀名
+        gzip_level : 9, //-1表示使用默认值
+      }
+
 more example see /test/main.js
 
 ##expressjs example
 
       var express = require('express');
       var app = express();
-
-
       var ifile = require("ifile");
-      
-   	 ifile.add([
-  		   ["/static",__dirname,['js','css','jpg']],
-   	 ],function(req,res,is_static){
-   	 	if(is_static){
-	    	res.statusCode = 404;
-	        res.end('404')
-        }
-        else{
-        	req._ifile_next();
-        }
-    })
-
-      app.use(function(req, res, next){
-      	req._ifile_next = next;
-        ifile.route(req,res)
-      });
+      app.use(ifile.connect()); 
+      //default is [['/static',__dirname]];
 
       app.listen(3000);
 

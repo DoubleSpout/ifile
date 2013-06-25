@@ -2,6 +2,16 @@ var ifile = require('../index.js');
 var assert = require('assert');
 var zlib = require('zlib');
 
+ifile.options = {
+	pipe_szie:2048,
+	expired:86400*1000*30,
+	gzip:true,
+	gzip_min_size:512,
+	gzip_file:['js','xml'],
+	gzip_level:0
+}
+
+
 ifile.add([
 	["/static",__dirname],
 	["/static_aaa",__dirname],
@@ -44,8 +54,11 @@ var testcss2_stat = fs.statSync(path.join(__dirname,'static2','static3','static3
 var testjs2 = fs.readFileSync(path.join(__dirname,'static2','static3','static3','test.xml'))
 var testjs2_stat = fs.statSync(path.join(__dirname,'static2','static3','static3','test.xml'))
 
+var testxml3 = fs.readFileSync(path.join(__dirname,'static2','static3','static3','test3.xml'))
+var testxml3_stat = fs.statSync(path.join(__dirname,'static2','static3','static3','test3.xml'))
 
-var n = 15;
+
+var n = 19;
 var back = function(m){
 	console.log(m)
 	if(!--n){
@@ -109,8 +122,8 @@ request('/static/Mount_Huangshan.jpg', {}, function(err,res,buf){
 	var ts = Date.parse(hs1_stat.mtime)+'';
 	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+hs1_stat.size)
 	assert.equal(res.headers["last-modified"], new Date(hs1_stat.mtime).toUTCString())
-	assert.equal(res.headers["cache-control"], 'max-age=86400')
-	assert.equal(res.headers["content-length"], hs1_stat.size)
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
+	assert.equal(res.headers["transfer-encoding"], "chunked")
 	assert.equal(res.headers["content-type"], 'image/jpeg')
 	assert.equal(buf.toString(), hs1.toString());
 
@@ -140,8 +153,8 @@ request('/static/Mount_Huangshan2.jpg', {}, function(err,res,buf){
 	var ts = Date.parse(hs2_stat.mtime)+'';
 	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+hs2_stat.size)
 	assert.equal(res.headers["last-modified"], new Date(hs2_stat.mtime).toUTCString())
-	assert.equal(res.headers["cache-control"], 'max-age=86400')
-	assert.equal(res.headers["content-length"], hs2_stat.size)
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
+	assert.equal(res.headers["transfer-encoding"], "chunked")
 	assert.equal(res.headers["content-type"], 'image/jpeg')
 	assert.equal(buf.toString(), hs2.toString());
 
@@ -159,7 +172,7 @@ request('/static/Mount_Huangshan2.jpg', {
 	var ts = Date.parse(hs2_stat.mtime)+'';
 	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+hs2_stat.size)
 	assert.equal(res.headers["last-modified"], new Date(hs2_stat.mtime).toUTCString())
-	assert.equal(res.headers["cache-control"], 'max-age=86400')
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
 	assert.equal(res.headers["content-type"], 'image/jpeg')
 	assert.equal(buf.toString(), '');
 
@@ -176,7 +189,7 @@ request('/static/Mount_Huangshan.jpg', {
 	var ts = Date.parse(hs1_stat.mtime)+'';
 	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+hs1_stat.size)
 	assert.equal(res.headers["last-modified"], new Date(hs1_stat.mtime).toUTCString())
-	assert.equal(res.headers["cache-control"], 'max-age=86400')
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
 	assert.equal(res.headers["content-type"], 'image/jpeg')
 	assert.equal(buf.toString(), '');
 
@@ -204,7 +217,7 @@ request('/static2/test.css', {}, function(err,res,buf){
 	var ts = Date.parse(testcss1_stat.mtime)+'';
 	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+testcss1_stat.size)
 	assert.equal(res.headers["last-modified"], new Date(testcss1_stat.mtime).toUTCString())
-	assert.equal(res.headers["cache-control"], 'max-age=86400')
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
 	assert.equal(res.headers["content-length"], testcss1_stat.size)
 	assert.equal(res.headers["content-type"], 'text/css')
 	assert.equal(buf.toString(), testcss1.toString());
@@ -221,7 +234,7 @@ request('/static2/test.js', {}, function(err,res,buf){
 	var ts = Date.parse(testjs1_stat.mtime)+'';
 	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+testjs1_stat.size)
 	assert.equal(res.headers["last-modified"], new Date(testjs1_stat.mtime).toUTCString())
-	assert.equal(res.headers["cache-control"], 'max-age=86400')
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
 	assert.equal(res.headers["content-length"], testjs1_stat.size)
 	assert.equal(res.headers["content-type"], 'application/javascript')
 	assert.equal(buf.toString(), testjs1.toString());
@@ -242,7 +255,7 @@ request('/static2/test.js', {
 	var ts = Date.parse(testjs1_stat.mtime)+'';
 	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+testjs1_stat.size)
 	assert.equal(res.headers["last-modified"], new Date(testjs1_stat.mtime).toUTCString())
-	assert.equal(res.headers["cache-control"], 'max-age=86400')
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
 	assert.equal(res.headers["content-type"], 'application/javascript')
 	assert.equal(buf.toString(), '');
 
@@ -260,7 +273,7 @@ request('/static2/test.css', {
 	var ts = Date.parse(testcss1_stat.mtime)+'';
 	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+testcss1_stat.size)
 	assert.equal(res.headers["last-modified"], new Date(testcss1_stat.mtime).toUTCString())
-	assert.equal(res.headers["cache-control"], 'max-age=86400')
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
 	assert.equal(res.headers["content-type"], 'text/css')
 	assert.equal(buf.toString(), '');
 
@@ -278,7 +291,7 @@ request('/static3/static3/test.css', {}, function(err,res,buf){
 	var ts = Date.parse(testcss2_stat.mtime)+'';
 	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+testcss2_stat.size)
 	assert.equal(res.headers["last-modified"], new Date(testcss2_stat.mtime).toUTCString())
-	assert.equal(res.headers["cache-control"], 'max-age=86400')
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
 	assert.equal(res.headers["content-length"], testcss2_stat.size)
 	assert.equal(res.headers["content-type"], 'text/css')
 	assert.equal(buf.toString(), testcss2.toString());
@@ -295,7 +308,7 @@ request('/static3/static3/test.xml', {}, function(err,res,buf){
 	var ts = Date.parse(testjs2_stat.mtime)+'';
 	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+testjs2_stat.size)
 	assert.equal(res.headers["last-modified"], new Date(testjs2_stat.mtime).toUTCString())
-	assert.equal(res.headers["cache-control"], 'max-age=86400')
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
 	assert.equal(res.headers["content-length"], testjs2_stat.size)
 	assert.equal(res.headers["content-type"], 'application/xml')
 	assert.equal(buf.toString(), testjs2.toString());
@@ -334,7 +347,7 @@ request('/static3/static3/test.xml', {"Accept-Encoding":"gzip,deflate,sdch"}, fu
 	var ts = Date.parse(testjs2_stat.mtime)+'';
 	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+testjs2_stat.size)
 	assert.equal(res.headers["last-modified"], new Date(testjs2_stat.mtime).toUTCString())
-	assert.equal(res.headers["cache-control"], 'max-age=86400')
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
 
 	assert.equal(res.headers["content-type"], 'application/xml')
 	assert.equal(res.headers["content-encoding"], 'gzip')
@@ -349,6 +362,90 @@ request('/static3/static3/test.xml', {"Accept-Encoding":"gzip,deflate,sdch"}, fu
 
 
 	
+
+},'GET')
+
+
+request('/static3/static3/test2.xml', {"Accept-Encoding":"gzip,deflate,sdch"}, function(err,res,buf){
+
+	if(err) throw(err);
+	assert.equal(res.statusCode, 200)
+	var ts = Date.parse(testjs2_stat.mtime)+'';
+
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
+
+	assert.equal(res.headers["content-type"], 'application/xml')
+	assert.equal(!res.headers["content-encoding"], true)
+	
+	//console.log(buf.length)
+back('test16')
+
+
+	
+
+},'GET')
+
+
+
+
+request('/static3/static3/test2.css', {"Accept-Encoding":"gzip,deflate,sdch"}, function(err,res,buf){
+
+	if(err) throw(err);
+	assert.equal(res.statusCode, 200)
+	var ts = Date.parse(testjs2_stat.mtime)+'';
+
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
+
+	assert.equal(res.headers["content-type"], 'text/css')
+	assert.equal(!res.headers["content-encoding"], true)
+	
+	//console.log(buf.length)
+back('test17')
+
+
+	
+
+},'GET')
+
+
+
+
+request('/static3/static3/test3.xml', {"Accept-Encoding":"gzip,deflate,sdch"}, function(err,res,buf){ //pipe response test
+
+	if(err) throw(err);
+	assert.equal(res.statusCode, 200)
+	var ts = Date.parse(testxml3_stat.mtime)+'';
+	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+testxml3_stat.size)
+	assert.equal(res.headers["last-modified"], new Date(testxml3_stat.mtime).toUTCString())
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
+
+	assert.equal(res.headers["content-type"], 'application/xml')
+	assert.equal(res.headers["content-encoding"], 'gzip')
+	
+	//console.log(buf.length)
+	zlib.gunzip(buf, function(err,buf2){
+			if(err) throw(err)
+			//console.log(buf2.length)
+			assert.equal(buf2.toString(), testxml3.toString());
+			back('test18')
+		})
+
+},'GET')
+
+
+request('/static3/static3/test3.xml', {}, function(err,res,buf){ //pipe response test
+
+	if(err) throw(err);
+	assert.equal(res.statusCode, 200)
+	var ts = Date.parse(testxml3_stat.mtime)+'';
+	assert.equal(res.headers["etag"],  ts.slice(0, ts.length-3) +'_'+testxml3_stat.size)
+	assert.equal(res.headers["last-modified"], new Date(testxml3_stat.mtime).toUTCString())
+	assert.equal(res.headers["cache-control"], 'max-age=2592000')
+
+	assert.equal(res.headers["content-type"], 'application/xml')
+	
+	//console.log(buf.length)
+	back('test19')
 
 },'GET')
 

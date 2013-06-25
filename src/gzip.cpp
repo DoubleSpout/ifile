@@ -32,9 +32,9 @@ int Gzip::gzip_uncompress(char *bufin, int lenin, char *bufout, int lenout){
         return 0;
 
 };
-int Gzip::gzip_compress(char *bufin, int lenin, char *bufout, int lenout){
+int Gzip::gzip_compress(char *bufin, int lenin, char *bufout, int lenout, int level){
 
-		z_stream d_stream;
+	z_stream d_stream;
         int result;
 
         memset(bufout, '\0', sizeof(lenout));
@@ -42,7 +42,7 @@ int Gzip::gzip_compress(char *bufin, int lenin, char *bufout, int lenout){
         d_stream.zfree  = NULL;
         d_stream.opaque = NULL;
 
-        result = deflateInit2(&d_stream, Z_DEFAULT_COMPRESSION,
+        result = deflateInit2(&d_stream, level,
                                 Z_DEFLATED, MAX_WBITS + 16,
                                 9, Z_DEFAULT_STRATEGY);
         if (result != Z_OK) {
