@@ -134,7 +134,7 @@ request('/static/Mount_Huangshan.jpg', {}, function(err,res,buf){
 
 //get test 2
 
-request('/static/Mount_Huangshan1.jpg', {}, function(err,res,buf){
+request('/static/Mount_Huangshan1.jpg?key=1', {}, function(err,res,buf){
 
 	if(err) throw(err);
 	assert.equal(res.statusCode, 404)
@@ -146,7 +146,7 @@ request('/static/Mount_Huangshan1.jpg', {}, function(err,res,buf){
 
 
 //get test 3
-request('/static/Mount_Huangshan2.jpg', {}, function(err,res,buf){
+request('/static/Mount_Huangshan2.jpg?key2=111&key3=222', {}, function(err,res,buf){
 
 	if(err) throw(err);
 	assert.equal(res.statusCode, 200)

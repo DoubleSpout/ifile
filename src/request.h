@@ -81,7 +81,7 @@ class Request {
     };
     ~Request(){
     	
-        if(url) delete []url;
+        //if(url) delete []url;
         if(if_modified_since) delete[]if_modified_since;
         if(if_none_match) delete[]if_none_match;
         if(accept_encoding)  delete[]accept_encoding;
