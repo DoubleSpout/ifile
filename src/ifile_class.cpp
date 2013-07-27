@@ -273,7 +273,7 @@ Handle<Value> ifile_class::match(const Arguments& args){
 
 
 
-	int uv_r = uv_queue_work(ifile::loop, &req->work_pool, worker_callback, after_worker_callback);
+	uv_queue_work(ifile::loop, &req->work_pool, worker_callback, after_worker_callback);
 	
 	return Undefined();
 };
