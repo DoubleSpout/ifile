@@ -16,7 +16,6 @@ int Gzip::gzip_uncompress(char *bufin, int lenin, char *bufout, int lenout){
 		z_stream d_stream;
         int result;
 
-        memset(bufout, '\0', sizeof(bufout));
         d_stream.zalloc = NULL;
         d_stream.zfree  = NULL;
         d_stream.opaque = NULL;
@@ -40,7 +39,6 @@ int Gzip::gzip_compress(char *bufin, int lenin, char *bufout, int lenout, int le
 	z_stream d_stream;
         int result;
 
-        memset(bufout, '\0', sizeof(lenout));
         d_stream.zalloc = NULL;
         d_stream.zfree  = NULL;
         d_stream.opaque = NULL;
