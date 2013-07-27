@@ -22,6 +22,9 @@ int Gzip::gzip_uncompress(char *bufin, int lenin, char *bufout, int lenout){
         d_stream.opaque = NULL;
 
         result = inflateInit2(&d_stream, MAX_WBITS + 16);
+        if (result != Z_OK) {
+                return -1;
+        }
         d_stream.next_in   = reinterpret_cast<Bytef *>(bufin);
         d_stream.avail_in  = lenin;
         d_stream.next_out  = reinterpret_cast<Bytef *>(bufout);
