@@ -273,7 +273,7 @@ Handle<Value> ifile_class::match(const Arguments& args){
 
 
 
-	int uv_r = uv_queue_work(ifile::loop, &req->work_pool, worker_callback, after_worker_callback);
+	uv_queue_work(ifile::loop, &req->work_pool, worker_callback, after_worker_callback);
 	
 	return Undefined();
 };
@@ -817,24 +817,27 @@ time_t ifile_class::parseLocalDate(char *date)
 		tm_.tm_mon = 1;
 	}
 	else if(strncmp(month,Mar,3) == 0){
-		tm_.tm_mon = 3;
+		tm_.tm_mon = 2;
 	}
 	else if(strncmp(month,Apr,3) == 0){
-		tm_.tm_mon = 4;
+		tm_.tm_mon = 3;
 	}
 	else if(strncmp(month,May,3) == 0){
-		tm_.tm_mon = 5;
+		tm_.tm_mon = 4;
 	}
 	else if(strncmp(month,Jun,3) == 0){
-		tm_.tm_mon = 6;
+		tm_.tm_mon = 5;
 	}
 	else if(strncmp(month,Jul,3) == 0){
-		tm_.tm_mon = 7;
+		tm_.tm_mon = 6;
 	}
 	else if(strncmp(month,Aug,3) == 0){
-		tm_.tm_mon = 8;
+		tm_.tm_mon = 7;
 	}
 	else if(strncmp(month,Sep,3) == 0){
+		tm_.tm_mon = 8;
+	}
+	else if(strncmp(month,Oct,3) == 0){
 		tm_.tm_mon = 9;
 	}
 	else if(strncmp(month,Nov,3) == 0){
