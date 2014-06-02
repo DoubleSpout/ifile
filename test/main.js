@@ -36,11 +36,11 @@ console.log('Server running at http://127.0.0.1:8124/');
 var fs = require('fs');
 var path = require('path');
 
-var hs1 = fs.readFileSync(path.join(__dirname,'static','mount_huangshan.jpg'))
-var hs1_stat = fs.statSync(path.join(__dirname,'static','mount_huangshan.jpg'))
+var hs1 = fs.readFileSync(path.join(__dirname,'Static','Mount_Huangshan.jpg'))
+var hs1_stat = fs.statSync(path.join(__dirname,'Static','Mount_Huangshan.jpg'))
 
-var hs2 = fs.readFileSync(path.join(__dirname,'static','mount_huangshan2.jpg'))
-var hs2_stat = fs.statSync(path.join(__dirname,'static','mount_huangshan2.jpg'))
+var hs2 = fs.readFileSync(path.join(__dirname,'Static','Mount_Huangshan2.jpg'))
+var hs2_stat = fs.statSync(path.join(__dirname,'Static','Mount_Huangshan2.jpg'))
 
 var testcss1 = fs.readFileSync(path.join(__dirname,'static2','static2','test.css'))
 var testcss1_stat = fs.statSync(path.join(__dirname,'static2','static2','test.css'))
@@ -115,7 +115,7 @@ setTimeout(function(){
 
 
 //get test 1
-request('/static/Mount_Huangshan.jpg', {}, function(err,res,buf){
+request('/Static/Mount_Huangshan.jpg', {}, function(err,res,buf){
 
 	if(err) throw(err);
 	assert.equal(res.statusCode, 200)
@@ -134,7 +134,7 @@ request('/static/Mount_Huangshan.jpg', {}, function(err,res,buf){
 
 //get test 2
 
-request('/static/Mount_Huangshan1.jpg?key=1', {}, function(err,res,buf){
+request('/Static/Mount_Huangshan1.jpg?key=1', {}, function(err,res,buf){
 
 	if(err) throw(err);
 	assert.equal(res.statusCode, 404)
@@ -146,7 +146,7 @@ request('/static/Mount_Huangshan1.jpg?key=1', {}, function(err,res,buf){
 
 
 //get test 3
-request('/static/Mount_Huangshan2.jpg?key2=111&key3=222', {}, function(err,res,buf){
+request('/Static/Mount_Huangshan2.jpg?key2=111&key3=222', {}, function(err,res,buf){
 
 	if(err) throw(err);
 	assert.equal(res.statusCode, 200)
@@ -164,7 +164,7 @@ request('/static/Mount_Huangshan2.jpg?key2=111&key3=222', {}, function(err,res,b
 
 
 var ts = Date.parse(hs2_stat.mtime)+'';
-request('/static/Mount_Huangshan2.jpg', {
+request('/Static/Mount_Huangshan2.jpg', {
 	"If-None-Match":ts.slice(0, ts.length-3) +'_'+hs2_stat.size,
 }, function(err,res,buf){
 	if(err) throw(err);
@@ -181,7 +181,7 @@ request('/static/Mount_Huangshan2.jpg', {
 },'GET')
 
 
-request('/static/Mount_Huangshan.jpg', {
+request('/Static/Mount_Huangshan.jpg', {
 	"If-Modified-Since":new Date(hs1_stat.mtime).toUTCString(),
 }, function(err,res,buf){
 	if(err) throw(err);
