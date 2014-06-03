@@ -4,17 +4,21 @@ var path = require('path')
 
 
 ifile.add([
-	["/static2",__dirname+path.sep+"test"],
+	//["/static2",__dirname+path.sep+"test"],
+	['/test',__dirname],
 
-	["/static2/",__dirname+path.sep+"user",0],
-	["static","user",[]],
-	["static/sss/","user",['js','css']],
-	["/static/ss/","user"+path.sep+"fsdf",['js']],
-	["/static/saa","user"+path.sep+"fsdf"+path.sep,[]]
+	//["/static2/",__dirname+path.sep+"user",0],
+	//["static","user",[]],
+	//["static/sss/","user",['js','css']],
+	//["/static/ss/","user"+path.sep+"fsdf",['js']],
+	//["/static/saa","user"+path.sep+"fsdf"+path.sep,[]]
 
 ],function(req, res, isStatic){
 	//console.log(res)
-	res.end('isStatic: '+isStatic);
+	//res.end('isStatic: '+isStatic);
+	res.statusCode = 404;
+
+    res.end('404')
 
 })
 
