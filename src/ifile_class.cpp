@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 #include "ifile_class.h"
 #include "ifile_handler.h"
 #include "request.h"
@@ -487,7 +488,7 @@ if(req_p->if_none_match){
 if(req_p->if_modified_since){
 	
 	
-
+	
 	time_t timer = parseLocalDate(req_p->if_modified_since);
 
 	if(timer){
@@ -497,7 +498,7 @@ if(req_p->if_modified_since){
 	//std::cout<<uiNow<<std::endl;
 	//std::cout<<mtime_ts<<std::endl;
 
-		if(mtime_ts <= uiNow){ //缓存过期，重新获取
+		if(mtime_ts <= uiNow || abs(mtime_ts - uiNow) == 8*3600){ //缓存过期，重新获取
 
 			req_p->status_code = 304;//设置响应的状态码
 			req_p->is_find_file = 1;//表示读取缓存找到匹配
