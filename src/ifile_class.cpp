@@ -226,7 +226,7 @@ Handle<Value> ifile_class::match(const Arguments& args){
 
 	String::Utf8Value url(args[0]->ToObject()->Get(String::New("url"))->ToString());//conver
 	char *uri_c = *url;
-	uri_c = tolower2(uri_c);
+	//uri_c = tolower2(uri_c);
 	req->url = new char[strlen(uri_c)+1];
 	strcpy(req->url , uri_c); //录入uri匹配规则
 	req->url[strlen(uri_c)] = '\0';
