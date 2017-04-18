@@ -24,7 +24,7 @@ To include the module in your project:
 
      var ifile = require('ifile');
 
-##benchmark
+## benchmark
 send the same js file, 6KB size.
 
       nginx 
@@ -114,7 +114,7 @@ then request the 127.0.0.1:8124/static/xxx.js
 
 if you have a file in __dirname/static/xxx.js then you will see it.
 
-##API
+## API
 
 ifile.add(routearray,not_match_callback);
 
@@ -142,7 +142,7 @@ for example if add ["/static2",__dirname]
 1,request "/user/aaa" will call the not_match_function,and is_static param will be 0;
 2,request "/static/not_exist_file" will call the not_match_function,and is_static param will be 1;
 
-##options
+## options
 set ifile.options property to change the default options,for example:
       
       var ifile = require('ifile');
@@ -164,7 +164,7 @@ default options is that:
 
 more example see /test/main.js
 
-##expressjs example
+## expressjs example
 
       var express = require('express');
       var app = express();
