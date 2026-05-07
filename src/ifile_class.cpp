@@ -97,6 +97,12 @@ Handle<Value> ifile_class::add(const Arguments& args){
 		String::Utf8Value suffix_val(file_array->Get(i)->ToString());//依次获取后缀名
 		ifile::gzip_file[i] = new char[16];
 		memset(ifile::gzip_file[i],'\0',16);
+		if (strlen(*suffix_val) < 16) {
+			strcpy(ifile::gzip_file[i], *suffix_val);
+		} else {
+			strncpy(ifile::gzip_file[i], *suffix_val, 15);
+			ifile::gzip_file[i][15] = '\0';
+		}
 		strcpy(ifile::gzip_file[i], *suffix_val); //循环录入后缀名
 
 		//std::cout<<ifile::gzip_file[i]<<std::endl;
